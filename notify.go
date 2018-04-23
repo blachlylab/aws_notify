@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 
@@ -9,10 +10,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns"
 )
 
-var arn_topic string = "arn:aws:sns:us-east-1:321829329018:Snakemake"
-
 func main() {
-	if len(os.Args) < 2 {
+	var topic = flag.String("topic", "arn:aws:sns:us-east-1:321829329018:Snakemake", "Specify a complete Topic ARN or give only the final identifier for auto-lookup")
+	flag.Parse()
+
+	if flag.NArg() < 1 {
 		log.Println("[Please specify a message]")
 		return
 	}
@@ -28,13 +30,13 @@ func main() {
 
 	svc := sns.New(sess)
 
-	var msg string = os.Args[1]
+	var msg string = flag.Arg(0)
 	var subj string = "Snakemake info"
 
 	publish_input := sns.PublishInput{
 		Message:  &msg,
 		Subject:  &subj,
-		TopicArn: &arn_topic}
+		TopicArn: topic} // no & operator because topic is a ptr
 
 	resp, err := svc.Publish(&publish_input)
 	if err != nil {
